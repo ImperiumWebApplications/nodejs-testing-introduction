@@ -1,5 +1,7 @@
 const authMiddleware = require("../middleware/is-auth");
 const { expect } = require("chai");
+const sinon = require("sinon");
+const jwt = require("jsonwebtoken");
 
 describe("Auth middleware", function () {
   it("should throw an error if no authorization header is present", function () {
@@ -28,14 +30,12 @@ describe("Auth middleware", function () {
       },
     };
     // Mock the jwt.verify function
-    const jwt = require("jsonwebtoken");
-    jwt.verify = function () {
-      return { userId: "abc" };
-    };
+    sinon.stub(jwt, "verify");
+    jwt.verify.returns({ userId: "abc" });
     authMiddleware(req, {}, () => {});
     expect(req).to.have.property("userId");
     expect(req).to.have.property("userId", "abc");
     // Restore the original function
-    jwt.verify = require("jsonwebtoken").verify;
+    jwt.verify.restore();
   });
 });
